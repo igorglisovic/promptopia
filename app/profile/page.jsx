@@ -11,13 +11,22 @@ const MyProfile = () => {
   const router = useRouter()
 
   const [posts, setPosts] = useState([])
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
+    console.log(session)
     const fetchPosts = async () => {
-      const res = await fetch(`/api/users/${session?.user.id}/posts`)
-      const data = await res.json()
+      try {
+        setLoading(true)
+        const res = await fetch(`/api/users/${session?.user.id}/posts`)
+        const data = await res.json()
 
-      setPosts(data)
+        setPosts(data)
+      } catch (error) {
+        console.log(error)
+      } finally {
+        setLoading(false)
+      }
     }
     if (session?.user.id) fetchPosts()
   }, [])
@@ -50,6 +59,7 @@ const MyProfile = () => {
       data={posts}
       handleEdit={handleEdit}
       handleDelete={handleDelete}
+      loading={loading}
     />
   )
 }

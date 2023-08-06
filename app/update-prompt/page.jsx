@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 
 import Form from '@components/Form'
-import { loadGetInitialProps } from 'next/dist/shared/lib/utils'
+import Loading from '@components/Loading'
 
 const EditPrompt = () => {
   const [submitting, setSubmitting] = useState(false)
@@ -12,6 +12,7 @@ const EditPrompt = () => {
     prompt: '',
     tag: '',
   })
+  const [loading, setLoading] = useState(false)
   const searchParams = useSearchParams()
   const promptId = searchParams.get('id')
 
@@ -39,6 +40,7 @@ const EditPrompt = () => {
     if (!promptId) return alert('Prompt ID not found!')
 
     try {
+      setLoading(true)
       const res = await fetch(`/api/prompt/${promptId}`, {
         method: 'PATCH',
         body: JSON.stringify({
@@ -54,10 +56,13 @@ const EditPrompt = () => {
       console.log(err)
     } finally {
       setSubmitting(false)
+      setLoading(false)
     }
   }
 
-  return (
+  return loading ? (
+    <Loading />
+  ) : (
     <Form
       type="Edit"
       post={post}

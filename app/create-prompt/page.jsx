@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 
 import Form from '@components/Form'
+import Loading from '@components/Loading'
 
 const CreatePrompt = () => {
   const [submitting, setSubmitting] = useState(false)
@@ -12,6 +13,7 @@ const CreatePrompt = () => {
     prompt: '',
     tag: '',
   })
+  const [loading, setLoading] = useState(false)
 
   const router = useRouter()
   const { data: session } = useSession()
@@ -22,6 +24,7 @@ const CreatePrompt = () => {
     setSubmitting(true)
 
     try {
+      setLoading(true)
       const res = await fetch('/api/prompt/new', {
         method: 'POST',
         body: JSON.stringify({
@@ -38,10 +41,13 @@ const CreatePrompt = () => {
       console.log(err)
     } finally {
       setSubmitting(false)
+      setLoading(false)
     }
   }
 
-  return (
+  return loading ? (
+    <Loading />
+  ) : (
     <Form
       type="Create"
       post={post}

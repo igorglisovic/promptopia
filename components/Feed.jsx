@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from 'react'
 import PromptCard from './PromptCard'
+import Loading from './Loading'
 
-const PromptCardList = ({ data, handleTagClick }) => {
+const PromptCardList = ({ data, handleTagClick, loading }) => {
   return (
-    <div className="mt-16 prompt_layout">
+    <div className="mt-2 prompt_layout">
       {data.map(post => (
         <PromptCard
           key={post._id}
@@ -22,6 +23,8 @@ const Feed = () => {
   const [searchResults, setSearchResults] = useState([])
   const [searchTimeout, setSearchTimeout] = useState(null)
 
+  const [loading, setLoading] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
   const [posts, setPosts] = useState([])
 
   const filterPrompts = searchText => {
@@ -35,6 +38,7 @@ const Feed = () => {
   }
 
   const handleSearchChange = e => {
+    setLoading(true)
     clearTimeout(searchTimeout)
     setSearchText(e.target.value)
 
@@ -42,6 +46,7 @@ const Feed = () => {
       setTimeout(() => {
         const searchedResult = filterPrompts(e.target.value)
         setSearchResults(searchedResult)
+        setLoading(false)
       }, 500)
     )
   }
@@ -54,11 +59,28 @@ const Feed = () => {
   }
 
   useEffect(() => {
-    const fetchPosts = async () => {
-      const res = await fetch('/api/prompt')
-      const data = await res.json()
+    if (!searchResults.length && searchText) {
+      setErrorMessage('No prompts found.')
+    }
 
-      setPosts(data)
+    if (searchResults.length) {
+      setErrorMessage('')
+    }
+  }, [searchResults])
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        setLoading(true)
+        const res = await fetch('/api/prompt')
+        const data = await res.json()
+
+        setPosts(data)
+      } catch (error) {
+        console.log(err)
+      } finally {
+        setLoading(false)
+      }
     }
     fetchPosts()
   }, [])
@@ -75,10 +97,16 @@ const Feed = () => {
           className="search_input peer"
         />
       </form>
-      <PromptCardList
-        data={searchText ? searchResults : posts}
-        handleTagClick={handleTagClick}
-      />
+      {errorMessage && <p className="mt-2">{errorMessage}</p>}
+      {loading ? (
+        <Loading />
+      ) : (
+        <PromptCardList
+          data={searchText ? searchResults : posts}
+          handleTagClick={handleTagClick}
+          loading={loading}
+        />
+      )}
     </section>
   )
 }

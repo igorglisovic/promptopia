@@ -9,15 +9,21 @@ const UserProfile = ({ params }) => {
   const userName = searchParams.get('name')
 
   const [userPosts, setUserPosts] = useState([])
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     const fetchPosts = async () => {
-      const response = await fetch(`/api/users/${params?.id}/posts`)
-      const data = await response.json()
+      try {
+        setLoading(true)
+        const response = await fetch(`/api/users/${params?.id}/posts`)
+        const data = await response.json()
 
-      console.log(data)
-
-      setUserPosts(data)
+        setUserPosts(data)
+      } catch (error) {
+        console.log(error)
+      } finally {
+        setLoading(false)
+      }
     }
 
     if (params?.id) fetchPosts()
@@ -28,6 +34,7 @@ const UserProfile = ({ params }) => {
       name={`${userName}'s`}
       desc={`Welcome to ${userName}'s personalized profile page. Explore ${userName}'s exceptional prompts and be inspired by the power of their imagination.`}
       data={userPosts}
+      loading={loading}
     />
   )
 }
